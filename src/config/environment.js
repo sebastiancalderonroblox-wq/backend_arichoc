@@ -15,13 +15,13 @@ export const config = {
     postgres: {
         host: process.env.PG_HOST || 'localhost',
         port: parseInt(process.env.PG_PORT || '5432', 10),
-        database: process.env.PG_DATABASE || 'adso_polyglot_db',
+        database: process.env.PG_DATABASE || 'ARICHOC',
         user: process.env.PG_USER || 'postgres',
         password: process.env.PG_PASSWORD || '',
         max: parseInt(process.env.PG_MAX_POOL || '10', 10),
         idleTimeoutMillis: parseInt(process.env.PG_IDLE_TIMEOUT || '30000', 10)
     },
     mongo: {
-        uri: process.env.MONGO_URI || 'mongodb://localhost:27017/adso_polyglot_db'
+        uri: process.env.MONGO_URI || 'mongodb://localhost:27017/ARICHOC'
     }
 };

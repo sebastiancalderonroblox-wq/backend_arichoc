@@ -1,9 +1,14 @@
 -- ============================================================================
 -- SCRIPT DDL: BASE DE DATOS TRANSACCIONAL ARICHOC (PostgreSQL 16)
+-- Nombre de Base de Datos: ARICHOC
 -- Proyecto: Plataforma E-Commerce y Personalización de Detalles ARICHOC
 -- Programa: Tecnólogo en Análisis y Desarrollo de Software (ADSO) - Ficha 3293992
 -- Centro: Centro Agroempresarial y Desarrollo Pecuario del Huila (Garzón, Huila)
 -- ============================================================================
+
+-- INSTRUCCIÓN DE CREACIÓN DE BASE DE DATOS (Ejecutar si no ha sido creada):
+-- CREATE DATABASE "ARICHOC";
+-- \c "ARICHOC";
 
 -- 1. TABLA: ROLES (Catálogo de perfiles y permisos)
 CREATE TABLE IF NOT EXISTS roles (
@@ -59,7 +64,7 @@ CREATE TABLE IF NOT EXISTS detalle_pedido (
     id_detalle INTEGER NOT NULL REFERENCES productos_detalles(id_detalle) ON UPDATE CASCADE,
     cantidad INTEGER NOT NULL CHECK (cantidad > 0),
     precio_unitario_historico NUMERIC(10,2) NOT NULL CHECK (precio_unitario_historico >= 0),
-    personalizacion_mongo_id CHAR(24) -- Puntero ObjectId inmutable a la colección personalizaciones_clientes (MongoDB)
+    personalizacion_mongo_id CHAR(24) -- Puntero ObjectId inmutable a la colección de personalizaciones
 );
 
 -- 6. TABLA: PAGOS (Conciliación financiera y pasarela)

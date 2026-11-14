@@ -9,8 +9,8 @@ Repositorio oficial del backend para la plataforma de **E-Commerce y Personaliza
 **ARICHOC** es una unidad productiva dedicada a la chocolatería artesanal y diseño de detalles personalizados en el municipio de Garzón, Huila.
 
 Este backend provee una arquitectura modular, escalable y robusta basada en **Node.js** y **Express.js**, integrando la persistencia de datos relacional para el manejo estricto de transacciones, inventario en tiempo real, pedidos y pagos, junto con soporte para persistencia documental:
-- **PostgreSQL 16 (Motor Relacional Transaccional):** Garantiza cumplimiento ACID para la gestión de usuarios, roles, catálogo maestro de productos con control de stock físico, órdenes de compra y conciliación financiera de pagos (Nequi, Bancolombia, Efectivo).
-- **MongoDB Atlas (Persistencia Documental):** Conexión preparada para catálogo dinámico y registros flexibles.
+- **PostgreSQL 16 (Motor Relacional Transaccional - Base `ARICHOC`):** Garantiza cumplimiento ACID para la gestión de usuarios, roles, catálogo maestro de productos con control de stock físico, órdenes de compra y conciliación financiera de pagos (Nequi, Bancolombia, Efectivo).
+- **MongoDB Atlas (Persistencia Documental - Base `ARICHOC`):** Conexión activa y configurada para catálogo dinámico y registros flexibles.
 
 ---
 
@@ -18,8 +18,8 @@ Este backend provee una arquitectura modular, escalable y robusta basada en **No
 
 - **Entorno de Ejecución:** [Node.js](https://nodejs.org/) (Arquitectura moderna con ECMAScript Modules `ESM`)
 - **Framework Web:** [Express.js](https://expressjs.com/) v5
-- **Motor de Base de Datos Relacional:** [PostgreSQL](https://www.postgresql.org/) (driver nativo `pg` con Pool de conexiones singleton)
-- **Motor Documental NoSQL:** [MongoDB Atlas](https://www.mongodb.com/atlas) vía [Mongoose](https://mongoosejs.com/)
+- **Motor de Base de Datos Relacional:** [PostgreSQL](https://www.postgresql.org/) (driver nativo `pg` con Pool de conexiones singleton hacia la base `ARICHOC`)
+- **Motor Documental NoSQL:** [MongoDB Atlas](https://www.mongodb.com/atlas) vía [Mongoose](https://mongoosejs.com/) (hacia la base `ARICHOC`)
 - **Middlewares & Utilidades:**
   - `cors` (Intercambio de recursos de origen cruzado)
   - `morgan` (Logger de peticiones HTTP en consola)
@@ -35,7 +35,7 @@ El proyecto sigue una organización modular sin carpetas vacías ni archivos res
 backend_arichoc/
 ├── .env.example              # Plantilla pública de variables de entorno requeridas
 ├── .gitignore                # Reglas de exclusión (node_modules, .env, logs)
-├── database.sql              # Script DDL de creación de la base de datos de ARICHOC
+├── database.sql              # Script DDL de creación de la base de datos ARICHOC
 ├── package.json              # Metadatos del proyecto, dependencias y scripts de arranque
 ├── README.md                 # Documentación técnica integral del sistema
 ├── pruebaADSO2/              # Colecciones y evidencias de pruebas HTTP (OpenAPI / YAML)
@@ -55,7 +55,7 @@ backend_arichoc/
 
 ## 🗄️ 4. Persistencia y Base de Datos (Script DDL)
 
-El entregable de base de datos se encuentra completamente definido en el script SQL **`database.sql`**, el cual crea y deja estructurada la base de datos para el proyecto formativo **ARICHOC**:
+El entregable de base de datos se encuentra completamente definido en el script SQL **`database.sql`**, el cual crea y deja estructurada la base de datos **`ARICHOC`**:
 
 1. **Tablas Normalizadas (1FN, 2FN y 3FN):**
    - `roles`: Catálogo de perfiles del sistema (`CLIENTE`, `ARTESANO`, `ADMINISTRADOR`).
@@ -85,7 +85,7 @@ El entregable de base de datos se encuentra completamente definido en el script 
 ### Prerrequisitos
 - **Node.js** v18.x o superior instalado.
 - **PostgreSQL 16+** instalado y en ejecución en el puerto `5432` (o servicio cloud).
-- **MongoDB Atlas** (o instancia local) accesible por Connection String.
+- **MongoDB Atlas** (o instancia local) con la base de datos `ARICHOC`.
 - **Git** instalado en el sistema.
 
 ### Paso 1: Clonar el Repositorio
@@ -112,7 +112,7 @@ En Linux / macOS:
 cp .env.example .env
 ```
 
-Edite el archivo `.env` con las credenciales de sus motores de bases de datos:
+Edite el archivo `.env` con las credenciales de sus motores de bases de datos (ambas apuntando a la base **`ARICHOC`**):
 ```ini
 PORT=3000
 NODE_ENV=development
@@ -120,20 +120,21 @@ NODE_ENV=development
 # PostgreSQL Configuration
 PG_HOST=localhost
 PG_PORT=5432
-PG_DATABASE=adso_polyglot_db
+PG_DATABASE=ARICHOC
 PG_USER=postgres
 PG_PASSWORD=su_contraseña_aqui
 PG_MAX_POOL=10
 PG_IDLE_TIMEOUT=30000
 
 # MongoDB Configuration
-MONGO_URI=mongodb+srv://<usuario>:<password>@cluster.mongodb.net/arichoc_db
+MONGO_URI=mongodb+srv://<usuario>:<password>@cluster.mongodb.net/ARICHOC?retryWrites=true&w=majority
 ```
 
 ### Paso 4: Aprovisionar la Base de Datos Relacional (PostgreSQL)
-Ejecute el script `database.sql` en su cliente PostgreSQL preferido (pgAdmin 4, DBeaver o CLI psql) para crear las tablas, restricciones, índices y seeds iniciales:
+Cree la base de datos `ARICHOC` y ejecute el script `database.sql` en su cliente PostgreSQL preferido (pgAdmin 4, DBeaver o CLI psql):
 ```bash
-psql -U postgres -d adso_polyglot_db -f database.sql
+createdb -U postgres ARICHOC
+psql -U postgres -d ARICHOC -f database.sql
 ```
 
 ### Paso 5: Iniciar el Servidor Backend
@@ -148,13 +149,13 @@ Modo Producción:
 npm start
 ```
 
-Salida esperada en consola (validación de conexión al iniciar):
+Salida esperada en consola (validación de conexión con ambas bases `ARICHOC` al iniciar):
 ```text
 🔌 [ADSO DUAL DB] Inicializando conexiones...
 🐘 [PostgreSQL] Nuevo cliente físico asignado en el Pool
-✅ [PostgreSQL Conectado] Base: "adso_polyglot_db"
+✅ [PostgreSQL Conectado] Base: "ARICHOC"
 🍃 [MongoDB] Conexión establecida exitosamente con el clúster
-✅ [MongoDB Atlas Conectado] Base: "arichoc_db"
+✅ [MongoDB Atlas Conectado] Base: "ARICHOC"
 🚀 Servidor activo en: http://localhost:3000
 ```
 
@@ -162,7 +163,7 @@ Salida esperada en consola (validación de conexión al iniciar):
 
 ## 🩺 6. Endpoints de Verificación (Health Check)
 
-El backend implementa la ruta inicial de salud para validar que el servidor está activo y diagnosticar la conexión con el motor de base de datos:
+El backend implementa la ruta inicial de salud para validar que el servidor está activo y diagnosticar la conexión con los motores de base de datos:
 
 ### `GET /api/health` o `GET /health`
 - **Código de Respuesta:** `200 OK`
@@ -176,11 +177,11 @@ El backend implementa la ruta inicial de salud para validar que el servidor est�
   "project": "ARICHOC - Plataforma de Chocolatería Artesanal y Detalles Personalizados",
   "environment": "development",
   "ficha": "3293992 - ADSO SENA Huila",
-  "timestamp": "2026-11-13T03:12:14.214Z",
+  "timestamp": "2026-11-14T00:58:37.809Z",
   "services": {
     "api": {
       "status": "up",
-      "uptime_seconds": 15
+      "uptime_seconds": 12
     },
     "postgres": {
       "status": "healthy",
@@ -189,7 +190,7 @@ El backend implementa la ruta inicial de salud para validar que el servidor est�
     },
     "mongodb": {
       "status": "healthy",
-      "latency_ms": 93,
+      "latency_ms": 98,
       "error": null
     }
   }
