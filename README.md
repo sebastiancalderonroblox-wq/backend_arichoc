@@ -1,4 +1,4 @@
-# 🍫 Plataforma ARICHOC — Backend API RESTful & Persistencia Políglota
+# 🍫 Plataforma ARICHOC — Backend API RESTful & Base de Datos
 
 Repositorio oficial del backend para la plataforma de **E-Commerce y Personalización de Chocolatería Artesanal ARICHOC**, desarrollada en el marco del programa **Tecnólogo en Análisis y Desarrollo de Software (ADSO - Ficha 3293992)** del **SENA Regional Huila** (Centro Agroempresarial y Desarrollo Pecuario del Huila - Garzón, Huila).
 
@@ -6,11 +6,11 @@ Repositorio oficial del backend para la plataforma de **E-Commerce y Personaliza
 
 ## 📌 1. Descripción del Proyecto
 
-**ARICHOC** es una unidad productiva dedicada a la chocolatería artesanal y diseño de detalles personalizados en Garzón, Huila. 
+**ARICHOC** es una unidad productiva dedicada a la chocolatería artesanal y diseño de detalles personalizados en el municipio de Garzón, Huila.
 
-Este backend implementa una **Arquitectura de Persistencia Políglota (Polyglot Persistence)** que orquesta de forma desacoplada dos motores de base de datos según las necesidades del negocio:
-- **PostgreSQL 16 (Motor Relacional Transaccional):** Garantiza atomicidad e integridad ACID para la gestión de usuarios, roles, catálogo maestro con inventario físico en tiempo real, órdenes de compra y conciliación de pagos (Nequi, Bancolombia, Efectivo).
-- **MongoDB 7.0 / Atlas (Motor Documental No Relacional):** Almacena fichas técnicas flexibles del catálogo, personalizaciones dinámicas en vivo (colores de empaque, toppings, dedicatorias de hasta 150 caracteres con índice TTL a 7 días) y bitácora de mensajes del asistente conversacional (Chatbot 24/7).
+Este backend provee una arquitectura modular, escalable y robusta basada en **Node.js** y **Express.js**, integrando la persistencia de datos relacional para el manejo estricto de transacciones, inventario en tiempo real, pedidos y pagos, junto con soporte para persistencia documental:
+- **PostgreSQL 16 (Motor Relacional Transaccional):** Garantiza cumplimiento ACID para la gestión de usuarios, roles, catálogo maestro de productos con control de stock físico, órdenes de compra y conciliación financiera de pagos (Nequi, Bancolombia, Efectivo).
+- **MongoDB Atlas (Persistencia Documental):** Conexión preparada para catálogo dinámico y registros flexibles.
 
 ---
 
@@ -19,7 +19,7 @@ Este backend implementa una **Arquitectura de Persistencia Políglota (Polyglot 
 - **Entorno de Ejecución:** [Node.js](https://nodejs.org/) (Arquitectura moderna con ECMAScript Modules `ESM`)
 - **Framework Web:** [Express.js](https://expressjs.com/) v5
 - **Motor de Base de Datos Relacional:** [PostgreSQL](https://www.postgresql.org/) (driver nativo `pg` con Pool de conexiones singleton)
-- **Motor Documental NoSQL:** [MongoDB Atlas](https://www.mongodb.com/atlas) vía [Mongoose ODM](https://mongoosejs.com/)
+- **Motor Documental NoSQL:** [MongoDB Atlas](https://www.mongodb.com/atlas) vía [Mongoose](https://mongoosejs.com/)
 - **Middlewares & Utilidades:**
   - `cors` (Intercambio de recursos de origen cruzado)
   - `morgan` (Logger de peticiones HTTP en consola)
@@ -29,44 +29,63 @@ Este backend implementa una **Arquitectura de Persistencia Políglota (Polyglot 
 
 ## 📂 3. Estructura del Directorio
 
-El proyecto sigue una arquitectura modular y escalable por capas de responsabilidad:
+El proyecto sigue una organización modular sin carpetas vacías ni archivos residuales, manteniendo únicamente los directorios activos del servidor:
 
 ```text
 backend_arichoc/
 ├── .env.example              # Plantilla pública de variables de entorno requeridas
 ├── .gitignore                # Reglas de exclusión (node_modules, .env, logs)
-├── database.sql              # Script DDL completo de PostgreSQL (tablas, FK, checks, índices, seeds)
+├── database.sql              # Script DDL de creación de la base de datos de ARICHOC
 ├── package.json              # Metadatos del proyecto, dependencias y scripts de arranque
 ├── README.md                 # Documentación técnica integral del sistema
 ├── pruebaADSO2/              # Colecciones y evidencias de pruebas HTTP (OpenAPI / YAML)
 └── src/
     ├── app.js                # Configuración de Express, middlewares globales y enrutadores
-    ├── server.js             # Punto de entrada (bootstrap), inicio de BD y apagado elegante (graceful shutdown)
+    ├── server.js             # Punto de entrada (bootstrap), inicio de BD y apagado elegante
     ├── config/
-    │   ├── db.js             # Singleton del Pool PostgreSQL y conexión Mongoose con eventos de ciclo de vida
+    │   ├── db.js             # Singleton del Pool PostgreSQL y conexión a bases de datos
     │   └── environment.js    # Validación fail-fast y tipado de variables de entorno
     ├── controllers/
     │   └── healthController.js # Lógica de diagnóstico, latencias y telemetría de BD
-    ├── middlewares/          # Interceptores de autenticación, validación y control de acceso
-    ├── models/               # Modelos y esquemas de Mongoose para MongoDB
-    │   ├── CatalogoFlexible.js      # Catálogo extendido con opciones dinámicas y filtros
-    │   ├── PersonalizacionCliente.js# Borradores de personalizaciones con TTL de 7 días
-    │   ├── SesionChatbot.js         # Bitácora conversacional escalable a soporte artesanal
-    │   └── index.js                 # Exportación centralizada de modelos
-    ├── routes/
-    │   └── healthRoutes.js   # Enrutador para verificación de salud del sistema
-    ├── services/             # Lógica de negocio y orquestación transaccional
-    └── utils/                # Funciones auxiliares, formateadores y constantes
+    └── routes/
+        └── healthRoutes.js   # Enrutador para verificación de salud del sistema (/api/health, /health)
 ```
 
 ---
 
-## ⚙️ 4. Requisitos Previos e Instalación
+## 🗄️ 4. Persistencia y Base de Datos (Script DDL)
+
+El entregable de base de datos se encuentra completamente definido en el script SQL **`database.sql`**, el cual crea y deja estructurada la base de datos para el proyecto formativo **ARICHOC**:
+
+1. **Tablas Normalizadas (1FN, 2FN y 3FN):**
+   - `roles`: Catálogo de perfiles del sistema (`CLIENTE`, `ARTESANO`, `ADMINISTRADOR`).
+   - `usuarios`: Cuentas registradas, credenciales encriptadas y asociación de rol.
+   - `productos_detalles`: Catálogo de arreglos y chocolates con control de `stock_actual` y `precio_base_cop`.
+   - `pedidos`: Órdenes transaccionales con control de estados (`PENDIENTE`, `CONFIRMADO`, `EN_PREPARACION`, etc.).
+   - `detalle_pedido`: Ítems asociados a la orden, cantidad, precio histórico y enlace políglota.
+   - `pagos`: Conciliación bancaria con referencia única (`ref_transaccion`) y métodos admitidos (`NEQUI`, `BANCOLOMBIA`, `EFECTIVO_GARZON`).
+
+2. **Restricciones de Integridad y Reglas de Negocio:**
+   - `CONSTRAINT chk_stock_positivo CHECK (stock_actual >= 0)`
+   - `CONSTRAINT chk_precio_base_positivo CHECK (precio_base_cop > 0)`
+   - `CONSTRAINT chk_total_positivo CHECK (total_cop >= 0)`
+   - `CONSTRAINT chk_metodo_pago CHECK (metodo_pago IN ('NEQUI', 'BANCOLOMBIA', 'EFECTIVO_GARZON'))`
+
+3. **Optimización con Índices B-Tree:**
+   - `idx_pedidos_usuario_estado`: Acelera la búsqueda de pedidos por cliente y filtros por estado.
+   - `idx_detalles_stock_disp`: Índice parcial que optimiza las consultas del catálogo público solo con stock disponible.
+
+4. **Datos Semilla (Seeds):**
+   - Inserción inicial de roles del sistema, usuarios de prueba y productos emblemáticos de chocolatería artesanal de Garzón, Huila.
+
+---
+
+## ⚙️ 5. Requisitos Previos e Instalación
 
 ### Prerrequisitos
 - **Node.js** v18.x o superior instalado.
 - **PostgreSQL 16+** instalado y en ejecución en el puerto `5432` (o servicio cloud).
-- **MongoDB Atlas** (clúster configurado con Connection String) o instancia local en puerto `27017`.
+- **MongoDB Atlas** (o instancia local) accesible por Connection String.
 - **Git** instalado en el sistema.
 
 ### Paso 1: Clonar el Repositorio
@@ -107,12 +126,12 @@ PG_PASSWORD=su_contraseña_aqui
 PG_MAX_POOL=10
 PG_IDLE_TIMEOUT=30000
 
-# MongoDB Configuration (Cluster Atlas o Local)
+# MongoDB Configuration
 MONGO_URI=mongodb+srv://<usuario>:<password>@cluster.mongodb.net/arichoc_db
 ```
 
 ### Paso 4: Aprovisionar la Base de Datos Relacional (PostgreSQL)
-Ejecute el script `database.sql` en su cliente PostgreSQL preferido (pgAdmin 4, DBeaver o CLI psql) para crear las 6 tablas normalizadas en 3FN, las restricciones de integridad de dominio, los índices de optimización B-Tree y los datos semilla (seeds):
+Ejecute el script `database.sql` en su cliente PostgreSQL preferido (pgAdmin 4, DBeaver o CLI psql) para crear las tablas, restricciones, índices y seeds iniciales:
 ```bash
 psql -U postgres -d adso_polyglot_db -f database.sql
 ```
@@ -129,7 +148,7 @@ Modo Producción:
 npm start
 ```
 
-Salida esperada en consola:
+Salida esperada en consola (validación de conexión al iniciar):
 ```text
 🔌 [ADSO DUAL DB] Inicializando conexiones...
 🐘 [PostgreSQL] Nuevo cliente físico asignado en el Pool
@@ -141,9 +160,9 @@ Salida esperada en consola:
 
 ---
 
-## 🩺 5. Endpoints de Verificación (Health Check)
+## 🩺 6. Endpoints de Verificación (Health Check)
 
-El backend expone endpoints de verificación de salud y telemetría para monitorizar el estado del servidor y la disponibilidad activa de ambos motores de persistencia:
+El backend implementa la ruta inicial de salud para validar que el servidor está activo y diagnosticar la conexión con el motor de base de datos:
 
 ### `GET /api/health` o `GET /health`
 - **Código de Respuesta:** `200 OK`
@@ -179,7 +198,7 @@ El backend expone endpoints de verificación de salud y telemetría para monitor
 
 ---
 
-## 👥 6. Integrantes del Equipo
+## 👥 7. Integrantes del Equipo
 
 Proyecto Formativo desarrollado por aprendices del **SENA Centro Agroempresarial y Desarrollo Pecuario del Huila (Garzón)**:
 
